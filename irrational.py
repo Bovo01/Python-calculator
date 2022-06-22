@@ -7,6 +7,7 @@ import polynomial
 
 class irrational:
     ''' CONSTRUCTOR '''
+
     def __init__(self, rooted_part: int, int_part: int = 1):
         self.rooted_part = rooted_part
         self.int_part = int_part
@@ -14,9 +15,13 @@ class irrational:
             raise ValueError('Rooted part must be positive')
         self.__minimize()
 
+    ''' MINIMIZING METHODS '''
+
+    # Minimizes the root moving all you can in front of the square root
     def __minimize(self):
         if self.int_part == 0:
             self.rooted_part = 1
+            return
         if self.rooted_part == 0:
             self.rooted_part = 1
             self.int_part = 0
@@ -29,6 +34,13 @@ class irrational:
                 self.int_part *= i
             else:
                 i += 1
+
+    # Returns an irrational number if necessary, an integer if possible
+    def reduce(self) -> int | irrational:
+        if self.rooted_part == 1:
+            return self.int_part
+        else:
+            return self
 
     ''' TO STRING METHOD '''
 
@@ -50,37 +62,40 @@ class irrational:
     def __add__(self, other: irrational | int | fraction.fraction) -> irrational | polynomial.polynomial | int:
         if isinstance(other, irrational):
             if self.rooted_part == other.rooted_part:
-                return irrational(self.rooted_part, self.int_part + other.int_part)
+                return irrational(self.rooted_part, self.int_part + other.int_part).reduce()
             else:
-                return polynomial.polynomial(self, other, ignoreChecks=True)
+                return polynomial.polynomial(self, other, ignoreChecks=True).reduce()
         elif isinstance(other, int):
             if self.rooted_part == 1:
                 return self.int_part + other
             else:
-                return polynomial.polynomial(self, other, ignoreChecks=True)
-        elif isinstance(other, fraction.fraction):
+                return polynomial.polynomial(self, other, ignoreChecks=True).reduce()
+        elif isinstance(other, fraction.fraction) or isinstance(other, polynomial.polynomial):
             return other + self
 
     # Overload unary operator -
     def __neg__(self) -> irrational:
-        return irrational(self.rooted_part, -self.int_part)
+        return irrational(self.rooted_part, -self.int_part).reduce()
 
     # Overload binary operator -
-    def __sub__(self, other: irrational) -> irrational:
-        if self.rooted_part == other.rooted_part:
-            return self + -other
-        else:
-            raise ValueError('Cannot sub irrationals with different roots')
+    def __sub__(self, other: irrational | int | fraction.fraction) -> irrational | polynomial.polynomial | int:
+        return self + -other
 
     # Overload binary operator *
-    def __mul__(self, other: irrational | int) -> irrational:
+    def __mul__(self, other: irrational | int | fraction.fraction) -> irrational | int | fraction.fraction:
         if isinstance(other, irrational):
-            return irrational(self.rooted_part * other.rooted_part, self.int_part * other.int_part)
+            return irrational(self.rooted_part * other.rooted_part, self.int_part * other.int_part).reduce()
         elif isinstance(other, int):
-            return irrational(self.rooted_part, self.int_part * other)
+            if self.rooted_part == 1:
+                return self.int_part * other
+            else:
+                return irrational(self.rooted_part, self.int_part * other).reduce()
+        elif isinstance(other, fraction.fraction):
+            return other * self
 
     # Overload binary operator /
     def __truediv__(self, other: irrational) -> irrational:
+        # TODO: Implement irrational division
         raise RuntimeError('Unimplemented')
 
     # Overload binary operator //
@@ -88,8 +103,8 @@ class irrational:
         return self.__truediv__(self, other)
 
     ''' COMPARISON METHODS '''
-    # Overload binary operator ==
 
+    # Overload binary operator ==
     def __eq__(self, other: irrational | int | fraction.fraction) -> bool:
         if isinstance(other, irrational):
             return self.rooted_part == other.rooted_part and self.int_part == other.int_part

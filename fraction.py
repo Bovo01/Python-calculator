@@ -47,9 +47,23 @@ class fraction:
             self.denominator = i * self.denominator
             self.numerator = i * self.numerator
             # gcd of the numerator and denominator int parts
-            MCD = gcd(self.numerator.int_part, self.denominator.int_part)
-            self.numerator.int_part //= MCD
-            self.denominator.int_part //= MCD
+            if isinstance(self.numerator, irrational.irrational):
+                MCD = gcd(self.numerator.int_part, self.denominator)
+                self.numerator.int_part //= MCD
+                self.denominator //= MCD
+            elif isinstance(self.numerator, int):
+                MCD = gcd(self.numerator, self.denominator)
+                self.numerator //= MCD
+                self.denominator //= MCD
+            else:
+                raise TypeError('Unsupported operation')
+
+
+    def reduce(self) -> fraction | irrational.irrational | int:
+        if self.denominator == 1:
+            return self.numerator
+        else:
+            return self
 
     ''' TO STRING METHOD '''
 
@@ -62,63 +76,70 @@ class fraction:
     ''' CALCULATIONS METHODS '''
 
     # Overload binary operator +
-    def __add__(self, other: fraction | int | irrational.irrational | polynomial.polynomial) -> fraction | polynomial.polynomial:
+    def __add__(self, other: fraction | int | irrational.irrational | polynomial.polynomial) -> fraction | polynomial.polynomial | int | irrational.irrational:
         if isinstance(other, int):
             other = fraction(other)
         if isinstance(other, fraction):
-            if isinstance(self.denominator, int) and isinstance(other.denominator, int):
-                return fraction(self.numerator * other.denominator + other.numerator * self.denominator, self.denominator * other.denominator)
+            if isinstance(self.numerator, int) and isinstance(other.numerator, int):
+                return fraction(self.numerator * other.denominator + other.numerator * self.denominator, self.denominator * other.denominator).reduce()
             elif isinstance(self.numerator, irrational.irrational) and isinstance(other.numerator, irrational.irrational) and self.numerator.rooted_part == other.numerator.rooted_part:
-                return fraction(irrational.irrational(self.numerator.rooted_part, self.numerator.int_part * other.denominator + other.numerator.int_part * self.denominator), self.denominator * other.denominator)
+                return fraction(irrational.irrational(self.numerator.rooted_part, self.numerator.int_part * other.denominator + other.numerator.int_part * self.denominator), self.denominator * other.denominator).reduce()
             else:
-                return polynomial.polynomial(self, other, ignoreChecks=True)
+                return polynomial.polynomial(self, other, ignoreChecks=True).reduce()
         elif isinstance(other, irrational.irrational):
             if isinstance(self.numerator, irrational.irrational) and self.numerator.rooted_part == other.rooted_part:
-                return fraction(self.numerator + other * self.denominator, self.denominator)
+                return fraction(self.numerator + other * self.denominator, self.denominator).reduce()
             else:
-                return polynomial.polynomial(self, other, ignoreChecks=True)
+                return polynomial.polynomial(self, other, ignoreChecks=True).reduce()
         elif isinstance(other, polynomial.polynomial):
             return other + self
+        else:
+            raise TypeError('Unsupported operation')
 
     # Overload unary operator -
-    def __neg__(self) -> fraction:
-        return fraction(-self.numerator, self.denominator)
+    def __neg__(self) -> fraction | int:
+        return fraction(-self.numerator, self.denominator).reduce()
 
     # Overload binary operator -
-    def __sub__(self, other: fraction | int | irrational.irrational | polynomial.polynomial) -> fraction | polynomial.polynomial:
+    def __sub__(self, other: fraction | int | irrational.irrational | polynomial.polynomial) -> fraction | polynomial.polynomial | int | irrational.irrational:
         return self + -other
 
     # Overload binary operator *
-    def __mul__(self, other: fraction | int | irrational.irrational) -> fraction:
+    def __mul__(self, other: fraction | int | irrational.irrational) -> fraction | int | irrational.irrational:
         if isinstance(other, fraction):
             if isinstance(self.numerator, irrational.irrational) or isinstance(other.numerator, irrational.irrational):
                 # Order must be (irrational * irrational) or (irrational * int) but not (int * irrational)
                 if isinstance(self.numerator, irrational.irrational):
-                    return fraction(self.numerator * other.numerator, self.denominator * other.denominator)
+                    return fraction(self.numerator * other.numerator, self.denominator * other.denominator).reduce()
                 else:
-                    return fraction(other.numerator * self.numerator, self.denominator * other.denominator)
+                    return fraction(other.numerator * self.numerator, self.denominator * other.denominator).reduce()
             else:
-                return fraction(self.numerator * other.numerator, self.denominator * other.denominator)
+                return fraction(self.numerator * other.numerator, self.denominator * other.denominator).reduce()
         elif isinstance(other, int):
-            return fraction(self.numerator * other, self.denominator)
+            return fraction(self.numerator * other, self.denominator).reduce()
         elif isinstance(other, irrational.irrational):
-            return fraction(other.numerator * self.numerator, self.denominator)
+            return fraction(other * self.numerator, self.denominator).reduce()
 
     # Returns the reciprocal of this fraction
-    def reciprocal(self):
-        return fraction(self.denominator, self.numerator)
+    def reciprocal(self) -> fraction | int | irrational.irrational:
+        return fraction(self.denominator, self.numerator).reduce()
 
     # Overload binary operator /
-    def __truediv__(self, other: fraction | int) -> fraction:
-        return self * other.reciprocal()
+    def __truediv__(self, other: fraction | int | irrational.irrational) -> fraction:
+        if isinstance(other, polynomial.polynomial):
+            raise TypeError('Cannot divide by a polynomial')
+        if isinstance(other, int) or isinstance(other, irrational.irrational):
+            other = fraction(other)
+        if isinstance(other, fraction):
+            return self * other.reciprocal()
 
     # Overload binary operator //
     def __floordiv__(self, other: fraction | int) -> fraction:
         return self / other
 
     ''' COMPARISON METHODS '''
-    # Overload binary operator ==
 
+    # Overload binary operator ==
     def __eq__(self, other: fraction | int | irrational.irrational) -> bool:
         if isinstance(other, fraction):
             return self.numerator == other.numerator and self.denominator == other.denominator

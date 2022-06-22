@@ -4,6 +4,8 @@ import irrational
 
 
 class polynomial:
+    ''' CONSTRUCTOR '''
+
     def __init__(self, *args: int | fraction.fraction | irrational.irrational, **kwargs):
         self.numbers = []
         if not kwargs.get('ignoreChecks', False):
@@ -11,6 +13,9 @@ class polynomial:
         else:
             self.numbers = list(args)
 
+    ''' PRIVATE METHODS '''
+
+    # Sets the numbers list adding all yuo can
     def __set_numbers(self, *args: int | fraction.fraction | irrational.irrational):
         ignored = []
         for i in range(len(args)):
@@ -41,9 +46,14 @@ class polynomial:
             if n != 0:
                 self.numbers.append(n)
 
+        if len(self.numbers) == 0:
+            self.numbers.append(fraction.fraction(0))
+
     # If the polynomial contains only one element, it returns it
-    def get(self) -> polynomial | fraction.fraction | irrational.irrational | int:
-        if len(self.numbers) == 1:
+    def reduce(self) -> polynomial | fraction.fraction | irrational.irrational | int:
+        if len(self.numbers) == 0:
+            return 0
+        elif len(self.numbers) == 1:
             return self.numbers[0]
         else:
             return self
@@ -64,8 +74,8 @@ class polynomial:
         return s
 
     ''' CALCULATIONS METHODS '''
-    # Overload binary operator +
 
+    # Overload binary operator +
     def __add__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
         numbers = list(self.numbers)
         if not isinstance(other, polynomial):
@@ -103,16 +113,11 @@ class polynomial:
                 if j not in added:
                     numbers.append(other.numbers[j])
 
-        if len(numbers) == 1:
-            return numbers[0]
-        else:
-            return polynomial(*numbers)
+        return polynomial(*numbers).reduce()
 
     # Overload unary operator -
     def __neg__(self) -> int | fraction.fraction | irrational.irrational | polynomial:
-        if len(self.numbers) == 0:
-            return -self.numbers[0]
-        return polynomial(*(-n for n in self.numbers))
+        return polynomial(*(-n for n in self.numbers)).reduce()
 
     # Overload binary operator -
     def __sub__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
@@ -120,7 +125,7 @@ class polynomial:
 
     def __mul__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
         if not isinstance(other, polynomial):
-            pass#TODO
+            pass  # TODO
 
     ''' COMPARISON METHODS '''
-    # TODO: Overload binary operator ==, !=, <
+    # TODO if necessary: Overload binary operator ==, !=, <

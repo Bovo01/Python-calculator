@@ -4,10 +4,10 @@ from polynomial import polynomial
 
 
 def main():
-    # rational_test()
+    rational_test()
     irrational_test()
-    # polynomial_test()
-    # mixed_test()
+    polynomial_test()
+    mixed_test()
 
 
 def rational_test():
@@ -23,6 +23,7 @@ def rational_test():
     print(f'f1 / f2: {f1 / f2}')
     print(f'f1 + 2: {f1 + 2}')
     print(f'f1 * 2: {f1 * 2}')
+    print(f'type(f1 * 2): {type(f1 * 2)}')
     print(f'f1 / 2: {f1 / 2}')
     print(f'-f1: {-f1}')
     print(f'-f2: {-f2}')
@@ -42,8 +43,8 @@ def irrational_test():
     fi = fraction(1, irrational(2))
     f = fraction(1, 2)
     i3 = irrational(8)
-    print(f'irrational fraction: {fi}')
-    print(f'fraction: {f}')
+    print(f'fi: {fi}')
+    print(f'f: {f}')
     print(f'i3: {i3}')
     print(f'fi + f: {fi + f}')
     print(f'fi + i3: {fi + i3}')
@@ -61,6 +62,7 @@ def polynomial_test():
     print(f'p1 - p2: {p1 - p2}')
     print(f'type({p1 - p2}): {type(p1 - p2)}')
     print(f'p1 * 3: {p1 * 3}')
+    print(f'p1 - p1: {p1 - p1}')
     
 
 def mixed_test():
@@ -74,7 +76,7 @@ def mixed_test():
     print(f'f - i: {f - i}')
 
     fi = fraction(1, irrational(2))
-    print(f'irrational fraction: {fi}')
+    print(f'fi: {fi}')
     print(f'fi + i: {fi + i}')
 
 if __name__ == "__main__":
