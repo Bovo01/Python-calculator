@@ -60,9 +60,11 @@ def polynomial_test():
     print(f'p1 + 1/2: {p1 + fraction(1,2)}')
     print(f'p1 + p2: {p1 + p2}')
     print(f'p1 - p2: {p1 - p2}')
-    print(f'type({p1 - p2}): {type(p1 - p2)}')
-    print(f'p1 * 3: {p1 * 3}')
     print(f'p1 - p1: {p1 - p1}')
+    print(f'p1 * 3: {p1 * 3}')
+    print(f'p1 * p2: {p1 * p2}')
+    print(f'p2 * p1: {p2 * p1}')
+    print(f'p1 / 3: {p1 / 3}')
     
 
 def mixed_test():

@@ -22,32 +22,22 @@ class polynomial:
             if i in ignored:
                 continue
             n = args[i]
-            if isinstance(n, int) or isinstance(n, fraction.fraction):
+
+            # Sum all the values that don't return a polynomial together
+            for j in range(i + 1, len(args)):
+                m = args[j]
                 if isinstance(n, int):
                     # Convert integer to fraction.fraction
                     n = fraction.fraction(n)
-
-                # Sum all the integers and fraction.fractions together
-                for j in range(i + 1, len(args)):
-                    m = args[j]
-                    if isinstance(m, int) or isinstance(m, fraction.fraction):
-                        n += m
-                        ignored.append(j)
-                    elif isinstance(m, irrational.irrational) and m.rooted_part == 1:
-                        n += m.int_part
-                        ignored.append(j)
-            elif isinstance(n, irrational.irrational):
-                # Sum all the irrational.irrationals together
-                for j in range(i + 1, len(args)):
-                    m = args[j]
-                    if isinstance(m, irrational.irrational) and m.rooted_part == n.rooted_part:
-                        n += m
-                        ignored.append(j)
+                sum = n + m
+                if not isinstance(sum, polynomial):
+                    n = sum
+                    ignored.append(j)
             if n != 0:
                 self.numbers.append(n)
 
         if len(self.numbers) == 0:
-            self.numbers.append(fraction.fraction(0))
+            self.numbers.append(0)
 
     # If the polynomial contains only one element, it returns it
     def reduce(self) -> polynomial | fraction.fraction | irrational.irrational | int:
@@ -83,6 +73,8 @@ class polynomial:
             # Sum for integers, fractions and irrational numbers
             for i in range(len(numbers)):
                 n = numbers[i]
+                if isinstance(n, int):
+                    n = fraction.fraction(n)
                 sum = n + other
                 if not isinstance(sum, polynomial):
                     if sum == 0:
@@ -123,9 +115,35 @@ class polynomial:
     def __sub__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
         return self + -other
 
+    # Overload binary operator *
     def __mul__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
-        if not isinstance(other, polynomial):
-            pass  # TODO
+        if isinstance(other, fraction.fraction) or isinstance(other, irrational.irrational):
+            return polynomial(*(other * n for n in self.numbers)).reduce()
+        elif isinstance(other, int):
+            return polynomial(*(n * other for n in self.numbers)).reduce()
+        elif isinstance(other, polynomial):
+            numbers = []
+            for n in self.numbers:
+                for m in other.numbers:
+                    if isinstance(n, int):
+                        numbers.append(m * n)
+                    else:
+                        numbers.append(n * m)
+            return polynomial(*numbers)
+        else:
+            raise TypeError('Unsupported input type')
 
-    ''' COMPARISON METHODS '''
-    # TODO if necessary: Overload binary operator ==, !=, <
+    # Overload binary operator /
+    def __truediv__(self, other: int | fraction.fraction | irrational.irrational) -> int | fraction.fraction | irrational.irrational | polynomial:
+        if not isinstance(other, polynomial):
+            if isinstance(other, fraction.fraction):
+                other = other.reciprocal()
+            else:
+                other = fraction.fraction(1, other)
+            return self * other
+        else:
+            raise TypeError('Unsupported input type')
+
+    # Overload binary operator //
+    def __floordiv__(self, other: int | fraction.fraction | irrational.irrational | polynomial) -> int | fraction.fraction | irrational.irrational | polynomial:
+        return self / other

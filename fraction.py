@@ -56,7 +56,7 @@ class fraction:
                 self.numerator //= MCD
                 self.denominator //= MCD
             else:
-                raise TypeError('Unsupported operation')
+                raise TypeError('Unsupported input type')
 
 
     def reduce(self) -> fraction | irrational.irrational | int:
@@ -89,12 +89,14 @@ class fraction:
         elif isinstance(other, irrational.irrational):
             if isinstance(self.numerator, irrational.irrational) and self.numerator.rooted_part == other.rooted_part:
                 return fraction(self.numerator + other * self.denominator, self.denominator).reduce()
+            elif isinstance(self.numerator, int) and other.rooted_part == 1:
+                return fraction(self.numerator + other.int_part * self.denominator, self.denominator).reduce()
             else:
                 return polynomial.polynomial(self, other, ignoreChecks=True).reduce()
         elif isinstance(other, polynomial.polynomial):
             return other + self
         else:
-            raise TypeError('Unsupported operation')
+            raise TypeError('Unsupported input type')
 
     # Overload unary operator -
     def __neg__(self) -> fraction | int:
